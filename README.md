@@ -19,9 +19,7 @@ $ npm install express express-graphql graphql
 $ npm install --save-dev nodemon
 ```
 
-4. Remplacer dans `package.json` la partie scripts par :
+4. Exécuter le script avec :
 ```
-  "scripts": {
-    "devStart": "nodemon server.js"
-  },
+nodejs server.js
 ```
