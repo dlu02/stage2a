@@ -17,6 +17,7 @@ const {
 } = require('graphql')
 const app = express()
 
+// exécution de la fonction f (issue de l'api rest d'onos) + parsage de la réponse
 function doFunction(f) {
     const str = 'cd /home/damien && ./onos/tools/test/bin/onos localhost '
     const newstr = str.concat(f);
@@ -32,38 +33,10 @@ function doFunction(f) {
     return str6.replace(',\n]2',']')
 }
 // fs.writeFile('test7.json', doFunction('devices'), () => {}) 
-console.log(JSON.parse(doFunction('links')))
-
-// const authors = [
-// 	{ id: 1, name: 'J. K. Rowling' },
-// 	{ id: 2, name: 'J. R. R. Tolkien' },
-// 	{ id: 3, name: 'Brent Weeks' }
-// ]
-
-// const books = [
-// 	{ id: 1, name: 'Harry Potter and the Chamber of Secrets', authorId: 1 },
-// 	{ id: 2, name: 'Harry Potter and the Prisoner of Azkaban', authorId: 1 },
-// 	{ id: 3, name: 'Harry Potter and the Goblet of Fire', authorId: 1 },
-// 	{ id: 4, name: 'The Fellowship of the Ring', authorId: 2 },
-// 	{ id: 5, name: 'The Two Towers', authorId: 2 },
-// 	{ id: 6, name: 'The Return of the King', authorId: 2 },
-// 	{ id: 7, name: 'The Way of Shadows', authorId: 3 },
-// 	{ id: 8, name: 'Beyond the Shadows', authorId: 3 }
-// ]
+// console.log(JSON.parse(doFunction('links')))
 
 
-/* const schema = new GraphQLSchema({
-    query: new GraphQLObjectType({
-        name: 'HelloWorld',
-        fields: () => ({
-            message: { 
-                type: GraphQLString, 
-                resolve: () => 'Hello World'
-            }
-        })
-    })
-}) */
-
+// type device pour un appareil du cluster
 const DeviceType = new GraphQLObjectType({
     name: 'Device',
     description: 'Appareil du cluster ONOS',
@@ -91,6 +64,7 @@ const DeviceType = new GraphQLObjectType({
     })
 })
 
+// type lien pour un lien du cluster
 const LinkType = new GraphQLObjectType({
     name: 'Liens',
     description: 'Un lien du cluster ONOS',
@@ -103,6 +77,7 @@ const LinkType = new GraphQLObjectType({
     })
 })
 
+// implémentation des requêtes graphql
 const RootQueryType = new GraphQLObjectType({
     name: 'Query',
     description: 'Root Query',
@@ -152,11 +127,13 @@ const RootQueryType = new GraphQLObjectType({
 //     })
 // })
 
+// construction du schéma graphql
 const schema = new GraphQLSchema({
     query: RootQueryType,
     // mutation: RootMutationType
 })
 
+// construction du serveur graphql
 app.use('/graphql', expressGraphQL({
     schema: schema,
     graphiql: true

@@ -2,24 +2,24 @@
 
 ## Installation
 
+> $ représente le pwd de l'utilisateur
+
 1. Installer nodejs et npm, puis ses paquets associés :
 ```
-$ pacman -S npm
+// Arch et dérivés
+$ sudo pacman -S npm
+
+// Ubuntu, Debian et dérivés
+$ sudo apt install npm
+
 ```
 
-2. Créer un projet dans npm :
+2. Cloner le repo
 ```
-$ mkdir stage2a
-$ npm init
-```
-
-3. Installer les modules :
-```
-$ npm install express express-graphql graphql
-$ npm install --save-dev nodemon
+$ git clone https://github.com/dlu02/stage2a.git
 ```
 
-4. Exécuter le script avec :
+3. Exécuter le script de création du serveur avec :
 ```
-nodejs server.js
+$ cd stage2a && nodejs server.js
 ```
