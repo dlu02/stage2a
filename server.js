@@ -24,9 +24,10 @@ function doFunction(f) {
     const strb = str1.replaceAll("Nicira, Inc.","Nicira Inc.")
     const str2 = strb.replaceAll('=','":"')
     const str3 = str2.replaceAll(', ','","')
-    const str4 = str3.replaceAll('\n','"}},\n')
-    const str5 = str4.replaceAll('id','{"data":{"id')
-    const str6 = '['+str5+']2'
+    const str4 = str3.replaceAll('\n','"},\n')
+    const str5 = str4.replaceAll('id','{"id')
+    const str5b = str5.replaceAll('local-status','localstatus')
+    const str6 = '['+str5b+']2'
     return str6.replace(',\n]2',']')
 }
 // fs.writeFile('test7.json', doFunction('devices'), () => {}) 
