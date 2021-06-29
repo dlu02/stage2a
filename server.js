@@ -87,6 +87,14 @@ const RootQueryType = new GraphQLObjectType({
             description: 'List of all devices',
             resolve: () => JSON.parse(doFunction('devices'))
         },
+        device: {
+            type: DeviceType,
+            description: 'A Single Device',
+            args: {
+                id: { type: GraphQLString }
+            },
+            resolve: (parent, args) => JSON.parse(doFunction('devices')).find(device => device.id === args.id)
+        },
         liens: {
             type: new GraphQLList(LinkType),
             description: 'List of all links',
