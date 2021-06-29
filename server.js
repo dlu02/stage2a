@@ -27,11 +27,12 @@ function doFunction(f) {
     const str4 = str3.replaceAll('\n','"},\n')
     const str5 = str4.replaceAll('id','{"id')
     const str5b = str5.replaceAll('local-status','localstatus')
-    const str6 = '['+str5b+']2'
+    const str6a = str5b.replaceAll('src','{"src')
+    const str6 = '['+str6a+']2'
     return str6.replace(',\n]2',']')
 }
 // fs.writeFile('test7.json', doFunction('devices'), () => {}) 
-console.log(JSON.parse(doFunction('devices')))
+console.log(JSON.parse(doFunction('links')))
 
 // const authors = [
 // 	{ id: 1, name: 'J. K. Rowling' },
@@ -82,11 +83,23 @@ const DeviceType = new GraphQLObjectType({
         hw: { type: GraphQLNonNull(GraphQLString)},
         sw: { type: GraphQLNonNull(GraphQLString)},
         serial: { type: GraphQLNonNull(GraphQLString)},
-        chassis: { type: GraphQLNonNull(GraphQLString)},
+        chassis: { type: GraphQLNonNull(GraphQLInt)},
         driver: { type: GraphQLNonNull(GraphQLString)},
         channelId: { type: GraphQLNonNull(GraphQLString)},
         managementAddress: { type: GraphQLNonNull(GraphQLString)},
         protocol: { type: GraphQLNonNull(GraphQLString)},
+    })
+})
+
+const LinkType = new GraphQLObjectType({
+    name: 'Liens',
+    description: 'Un lien du cluster ONOS',
+    fields: () => ({
+        src: { type: GraphQLNonNull(GraphQLString)},
+        dst: { type: GraphQLNonNull(GraphQLString)},
+        type: { type: GraphQLNonNull(GraphQLString)},
+        state: { type: GraphQLNonNull(GraphQLString)},
+        expected: { type: GraphQLNonNull(GraphQLString)}
     })
 })
 
@@ -98,6 +111,11 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(DeviceType),
             description: 'List of all devices',
             resolve: () => JSON.parse(doFunction('devices'))
+        },
+        liens: {
+            type: new GraphQLList(LinkType),
+            description: 'List of all links',
+            resolve: () => JSON.parse(doFunction('links'))
         }
     })
 })
