@@ -46,7 +46,8 @@ def create_graph_from_topology():
         for l in link_list:
             gr.add_edge(l['src']['device'],l['dst']['device'])
         
-        nx.draw(gr)
-        plt.savefig("test.png")
+        return gr
 
-create_graph_from_topology()
+gr = create_graph_from_topology()
+nx.draw(gr)
+plt.savefig("test.png")
