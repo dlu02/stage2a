@@ -46,6 +46,10 @@ def create_graph_from_topology():
         for l in link_list:
             gr.add_edge(l['src']['device'],l['dst']['device'])
         
+        for h in host_list:
+            gr.add_node(h['id'])
+            gr.add_edge(h['id'],h['locations'][0]['elementId'])
+        
         return gr
 
 gr = create_graph_from_topology()
