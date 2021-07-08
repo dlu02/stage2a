@@ -1,4 +1,4 @@
-import requests,json
+import requests
 from requests.auth import HTTPBasicAuth
 import networkx as nx
 import matplotlib.pyplot as plt
