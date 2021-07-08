@@ -47,11 +47,11 @@ def create_graph_from_topology():
             gr.add_edge(l['src']['device'],l['dst']['device'])
         
         for h in host_list:
-            gr.add_node(h['id'])
-            gr.add_edge(h['id'],h['locations'][0]['elementId'])
+            gr.add_node(h['id'],id=h['id'])
+            gr.add_edge(h['id'],h['locations'][0]['elementId'],color='red')
         
         return gr
 
 gr = create_graph_from_topology()
-nx.draw(gr)
+r=nx.draw(gr, with_labels=True, font_weight='bold')
 plt.savefig("test.png")
