@@ -60,8 +60,8 @@ gr = create_graph_from_topology("192.168.1.154")
 r=nx.draw(gr, with_labels=True)
 
 # test Dijkstra
-l = nx.shortest_path(gr,"26:C6:B1:E2:CB:1F/None","CE:51:C6:10:7E:D9/None")
-print(l)
+# l = nx.shortest_path(gr,"26:C6:B1:E2:CB:1F/None","CE:51:C6:10:7E:D9/None")
+# print(l)
 
 
 plt.savefig("test.png")
