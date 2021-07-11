@@ -26,14 +26,16 @@ function doFunction(f) {
     const str2 = strb.replaceAll('=','":"')
     const str3 = str2.replaceAll(', ','","')
     const str4 = str3.replaceAll('\n','"},\n')
-    const str5 = str4.replaceAll('id','{"id')
+    const str5 = str4.replaceAll("provider","pvers")
     const str5b = str5.replaceAll('local-status','localstatus')
     const str6a = str5b.replaceAll('src','{"src')
-    const str6 = '['+str6a+']2'
+    const str6b = str6a.replaceAll("ip(s)","ips")
+    const str7 = str6b.replaceAll("id",'{"id')
+    const str6 = '['+str7+']2'
     return str6.replace(',\n]2',']')
 }
 // fs.writeFile('test7.json', doFunction('devices'), () => {}) 
-// console.log(JSON.parse(doFunction('links')))
+// console.log(JSON.parse(doFunction('hosts')))
 
 
 // type device pour un appareil du cluster
@@ -77,6 +79,23 @@ const LinkType = new GraphQLObjectType({
     })
 })
 
+// type hosts pour un host du cluster
+const HostType = new GraphQLObjectType({
+    name: 'Hosts',
+    description: 'Un host du cluster ONOS',
+    fields: () => ({
+        id: { type: GraphQLNonNull(GraphQLString)},
+        mac: { type: GraphQLNonNull(GraphQLString)},
+        locations: { type: GraphQLNonNull(GraphQLString)},
+        auxLocations: { type: GraphQLNonNull(GraphQLString)},
+        vlan: { type: GraphQLNonNull(GraphQLString)},
+        ips: { type: GraphQLNonNull(GraphQLString)},
+        innerVlan: { type: GraphQLNonNull(GraphQLString)},
+        outerTPID: { type: GraphQLNonNull(GraphQLString)},
+        provider: { type: GraphQLNonNull(GraphQLString)},
+        configured: { type: GraphQLNonNull(GraphQLString)}
+    })
+})
 // implémentation des requêtes graphql
 const RootQueryType = new GraphQLObjectType({
     name: 'Query',
@@ -99,6 +118,11 @@ const RootQueryType = new GraphQLObjectType({
             type: new GraphQLList(LinkType),
             description: 'List of all links',
             resolve: () => JSON.parse(doFunction('links'))
+        },
+        hosts: {
+            type: new GraphQLList(HostType),
+            description: 'List of all hosts',
+            resolve: () => JSON.parse(doFunction('hosts'))
         }
     })
 })
@@ -144,6 +168,6 @@ const schema = new GraphQLSchema({
 // construction du serveur graphql
 app.use('/graphql', expressGraphQL({
     schema: schema,
-    graphiql: true
+    graphiql: true,
 }))
 app.listen(5000., () => console.log('Server Running'))
