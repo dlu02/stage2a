@@ -15,28 +15,31 @@ const {
     GraphQLScalarType,
     GraphQLBoolean
 } = require('graphql')
+
+const { GraphQLJSON } = require('graphql-type-json');
+
 const app = express()
 
 // exécution de la fonction f (issue de l'api rest d'onos) + parsage de la réponse
 function doFunction(f) {
     const str = 'cd /home/damien && ./onos/tools/test/bin/onos localhost '
-    const newstr = str.concat(f);
-    const str1 = child_process.execSync(newstr).toString();
-    const strb = str1.replaceAll("Nicira, Inc.","Nicira Inc.")
-    const str2 = strb.replaceAll('=','":"')
-    const str3 = str2.replaceAll(', ','","')
-    const str4 = str3.replaceAll('\n','"},\n')
-    const str5 = str4.replaceAll("provider","pvers")
-    const str5b = str5.replaceAll('local-status','localstatus')
-    const str6a = str5b.replaceAll('src','{"src')
-    const str6b = str6a.replaceAll("ip(s)","ips")
-    const str7 = str6b.replaceAll("id",'{"id')
-    const str6 = '['+str7+']2'
-    return str6.replace(',\n]2',']')
+    const newstr = str+f+" -j";
+    const str1 = child_process.execSync(newstr);
+    return str1
 }
-// fs.writeFile('test7.json', doFunction('devices'), () => {}) 
-// console.log(JSON.parse(doFunction('hosts')))
-
+// fs.writeFile('test7.json', doFunction('devices'), () => {})
+// const test = JSON.parse(doFunction('hosts'))
+// // test["locations"] = JSON.parse(test["locations"])
+// // for (var elt in test) {
+// //     const temp = (elt["locations"])[0]
+// //     elt.locations = JSON.stringify(temp)
+// // }
+// for (const elt of test) {
+//     const temp = elt["locations"]
+//     elt["locations"] = JSON.stringify(temp)
+// }
+// // console.log(test[2].locations[0])
+// console.log(test)
 
 // type device pour un appareil du cluster
 const DeviceType = new GraphQLObjectType({
@@ -71,11 +74,10 @@ const LinkType = new GraphQLObjectType({
     name: 'Liens',
     description: 'Un lien du cluster ONOS',
     fields: () => ({
-        src: { type: GraphQLNonNull(GraphQLString)},
-        dst: { type: GraphQLNonNull(GraphQLString)},
+        src: { type: GraphQLJSON},
+        dst: { type: GraphQLJSON},
         type: { type: GraphQLNonNull(GraphQLString)},
-        state: { type: GraphQLNonNull(GraphQLString)},
-        expected: { type: GraphQLNonNull(GraphQLString)}
+        state: { type: GraphQLNonNull(GraphQLString)}
     })
 })
 
@@ -86,7 +88,7 @@ const HostType = new GraphQLObjectType({
     fields: () => ({
         id: { type: GraphQLNonNull(GraphQLString)},
         mac: { type: GraphQLNonNull(GraphQLString)},
-        locations: { type: GraphQLNonNull(GraphQLString)},
+        locations: { type: GraphQLJSON},
         auxLocations: { type: GraphQLNonNull(GraphQLString)},
         vlan: { type: GraphQLNonNull(GraphQLString)},
         ips: { type: GraphQLNonNull(GraphQLString)},
