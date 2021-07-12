@@ -2,6 +2,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import networkx as nx
 import matplotlib.pyplot as plt
+import time
 
 print("Démarrage de l'application IPS, veuillez patienter.\n")
 print("Vérification de la disponibilité de l'API Onos...\n")
@@ -30,22 +31,22 @@ def create_graph_from_topology(ip):
     gr = nx.Graph()
 
     # requêtes au contrôleur ONOS
-    r_devices = requests.get("http://"+ip+":8181/onos/v1/devices", auth=HTTPBasicAuth('karaf','karaf'))
+    # r_devices = requests.get("http://"+ip+":8181/onos/v1/devices", auth=HTTPBasicAuth('karaf','karaf'))
     r_host = requests.get("http://"+ip+":8181/onos/v1/hosts", auth=HTTPBasicAuth('karaf','karaf'))
     r_link = requests.get("http://"+ip+":8181/onos/v1/links", auth=HTTPBasicAuth('karaf','karaf'))
     if (r_host.status_code != 200):
         return "Erreur sur la liste des hôtes."
     elif (r_link.status_code != 200):
         return "Erreur sur la liste des liens."
-    elif (r_devices.status_code != 200):
-        return "Erreur sur la liste des appareils."
+    # elif (r_devices.status_code != 200):
+    #     return "Erreur sur la liste des appareils."
     else:
-        devices_list = r_devices.json()['devices']
+        # devices_list = r_devices.json()['devices']
         host_list = r_host.json()['hosts']
         link_list = r_link.json()['links']
         
-        for i in devices_list:
-            gr.add_node(i['id'])
+        # for i in devices_list:
+        #     gr.add_node(i['id'])
         
         for l in link_list:
             gr.add_edge(l['src']['device'],l['dst']['device'])
@@ -56,6 +57,7 @@ def create_graph_from_topology(ip):
         
         return gr
 
+start = time.time()
 gr = create_graph_from_topology("192.168.1.154")
 r=nx.draw(gr, with_labels=True)
 
@@ -63,6 +65,6 @@ r=nx.draw(gr, with_labels=True)
 # l = nx.shortest_path(gr,"26:C6:B1:E2:CB:1F/None","CE:51:C6:10:7E:D9/None")
 # print(l)
 
-
 plt.savefig("test.png")
-plt.show()
+end = time.time()
+print(end - start)
