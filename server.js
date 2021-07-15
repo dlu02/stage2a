@@ -22,7 +22,7 @@ const app = express()
 
 // exécution de la fonction f (issue de l'api rest d'onos) + parsage de la réponse
 function doFunction(f) {
-    const str = 'cd /home/damien && ./onos/tools/test/bin/onos localhost '
+    const str = 'onos localhost '
     const newstr = str+f+" -j";
     const str1 = child_process.execSync(newstr);
     return str1
@@ -172,4 +172,18 @@ app.use('/graphql', expressGraphQL({
     schema: schema,
     graphiql: true,
 }))
+
+// api rest
+app.get('/devices', (req,res) => {
+    res.status(200).json(JSON.parse(doFunction('devices')))
+})
+
+app.get('/links', (req,res) => {
+    res.status(200).json(JSON.parse(doFunction('links')))
+})
+
+app.get('/hosts', (req,res) => {
+    res.status(200).json(JSON.parse(doFunction('hosts')))
+})
+
 app.listen(5000., () => console.log('Server Running'))
