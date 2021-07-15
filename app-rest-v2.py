@@ -17,26 +17,25 @@ print("Vérification de la disponibilité de l'API Onos...\n")
 
 # print(r_links)
 
-
 # création du graphe de la topologie du réseau associé au contrôleur ONOS à partir de son adresse IP
 def create_graph_from_topology(ip):
     # initialisation du graphe
     gr = nx.Graph()
 
     # requêtes au contrôleur ONOS
-    url = "http://"+ip+":5000/graphql"
-    liens_query = {'query': "query{liens{src,dst}}"}
-    host_query = {'query': "query{hosts{id,locations}}"}
-    r_hosts = requests.post(url, auth=HTTPBasicAuth('karaf','karaf'), data = host_query)
-    r_links = requests.post(url, auth=HTTPBasicAuth('karaf','karaf'), data = liens_query)
-
-    if (r_hosts.status_code != 200):
+    # r_devices = requests.get("http://"+ip+":8181/onos/v1/devices", auth=HTTPBasicAuth('karaf','karaf'))
+    r_host = requests.get("http://"+ip+":5000/hosts", auth=HTTPBasicAuth('karaf','karaf'))
+    r_link = requests.get("http://"+ip+":5000/links", auth=HTTPBasicAuth('karaf','karaf'))
+    if (r_host.status_code != 200):
         return "Erreur sur la liste des hôtes."
-    elif (r_links.status_code != 200):
+    elif (r_link.status_code != 200):
         return "Erreur sur la liste des liens."
+    # elif (r_devices.status_code != 200):
+    #     return "Erreur sur la liste des appareils."
     else:
-        host_list = r_hosts.json()['data']['hosts']
-        link_list = r_links.json()['data']['liens']
+        # devices_list = r_devices.json()['devices']
+        host_list = r_host.json()
+        link_list = r_link.json()
         
         # for i in devices_list:
         #     gr.add_node(i['id'])
@@ -53,7 +52,7 @@ def create_graph_from_topology(ip):
 start = time.time()
 gr = create_graph_from_topology("192.168.1.154")
 r = nx.draw(gr, with_labels=True)
-plt.savefig("test-graphql.png")
+plt.savefig("test.png")
 end = time.time()
 
 print("La topologie du réseau a été générée. Temps de génération : ", end - start, " secondes\n")
@@ -93,4 +92,3 @@ for i in range(0,len(l)-1):
             fwd_orig = ("","")
 
 print(liste_intent)
-
