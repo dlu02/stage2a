@@ -20,7 +20,7 @@ print("Vérification de la disponibilité de l'API Onos...\n")
 # création du graphe de la topologie du réseau associé au contrôleur ONOS à partir de son adresse IP
 def create_graph_from_topology(ip):
     # initialisation du graphe
-    gr = nx.Graph()
+    gr = nx.DiGraph()
 
     # requêtes au contrôleur ONOS
     # r_devices = requests.get("http://"+ip+":8181/onos/v1/devices", auth=HTTPBasicAuth('karaf','karaf'))
@@ -42,10 +42,12 @@ def create_graph_from_topology(ip):
         
         for l in link_list:
             gr.add_edge(l['src']['device'],l['dst']['device'],orig=l['src']['port'],dest=l['dst']['port'])
+            gr.add_edge(l['dst']['device'],l['src']['device'],orig=l['dst']['port'],dest=l['src']['port'])
         
         for h in host_list:
             gr.add_node(h['id'],id=h['id'])
             gr.add_edge(h['id'],h['locations'][0]["elementId"],orig="host",dest=h['locations'][0]["port"])
+            gr.add_edge(h['locations'][0]["elementId"],h['id'],orig=h['locations'][0]["port"],dest="host")
         
         return gr
 
@@ -54,7 +56,6 @@ gr = create_graph_from_topology("192.168.1.154")
 r = nx.draw(gr, with_labels=True)
 plt.savefig("test.png")
 end = time.time()
-
 print("La topologie du réseau a été générée. Temps de génération : ", end - start, " secondes\n")
 while (1):
     orig = input("Veuillez entrer l'hôte d'origine.\n")
@@ -74,21 +75,45 @@ print("Exécution de Dijsktra... \n")
 l = nx.shortest_path(gr,orig,dest)
 print("Voici le chemin le plus court : \n")
 print(l)
+
 print("\nInstallation des intents :")
 
 liste_intent = []
 fwd_orig = ("","")
 fwd_dest = ("","")
+mac_orig = orig.replace("/None","")
+mac_dest = dest.replace("/None","")
 for i in range(0,len(l)-1):
-    port = gr.get_edge_data(l[i],l[i+1])
-    if (port["orig"]=="host"):
-        fwd_orig = (l[i+1],port["dest"])
-    else:
+    if i==len(l)-2:
+        port = gr.get_edge_data(l[i],l[i+1])
         fwd_dest = (l[i],port["orig"])
-        if (port["orig"]!="host"):
-            liste_intent.append([fwd_orig,fwd_dest])
+        intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+        intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+        r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+        +"&macorig="+mac_orig+"&macdest="+mac_dest)
+        r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+        +"&macorig="+mac_dest+"&macdest="+mac_orig)
+        print([intent_orig,intent_dest])
+        print([intent_dest,intent_orig])
+    else:
+        port = gr.get_edge_data(l[i],l[i+1])
+        if (port["orig"]=="host"):
             fwd_orig = (l[i+1],port["dest"])
         else:
-            fwd_orig = ("","")
+            fwd_dest = (l[i],port["orig"])
+            if (port["orig"]!="host"):
+                intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+                intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+                r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+                +"&macorig="+mac_orig+"&macdest="+mac_dest)
+                r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+        +"&macorig="+mac_dest+"&macdest="+mac_orig)
+                print([intent_orig,intent_dest])
+                print([intent_dest,intent_orig])
+
+                fwd_orig = (l[i+1],port["dest"])
+            else:
+                fwd_orig = ("","")
+
 
 print(liste_intent)

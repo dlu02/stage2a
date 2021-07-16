@@ -80,17 +80,39 @@ print("\nInstallation des intents :")
 liste_intent = []
 fwd_orig = ("","")
 fwd_dest = ("","")
+mac_orig = orig.replace("/None","")
+mac_dest = dest.replace("/None","")
 for i in range(0,len(l)-1):
-    port = gr.get_edge_data(l[i],l[i+1])
-    if (port["orig"]=="host"):
-        fwd_orig = (l[i+1],port["dest"])
-    else:
+    if i==len(l)-2:
+        port = gr.get_edge_data(l[i],l[i+1])
         fwd_dest = (l[i],port["orig"])
-        if (port["orig"]!="host"):
-            liste_intent.append([fwd_orig,fwd_dest])
+        intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+        intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+        r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+        +"&macorig="+mac_orig+"&macdest="+mac_dest)
+        r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+        +"&macorig="+mac_dest+"&macdest="+mac_orig)
+        print([intent_orig,intent_dest])
+        print([intent_dest,intent_orig])
+    else:
+        port = gr.get_edge_data(l[i],l[i+1])
+        if (port["orig"]=="host"):
             fwd_orig = (l[i+1],port["dest"])
         else:
-            fwd_orig = ("","")
+            fwd_dest = (l[i],port["orig"])
+            if (port["orig"]!="host"):
+                intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+                intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+                r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+                +"&macorig="+mac_orig+"&macdest="+mac_dest)
+                r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+        +"&macorig="+mac_dest+"&macdest="+mac_orig)
+                print([intent_orig,intent_dest])
+                print([intent_dest,intent_orig])
+
+                fwd_orig = (l[i+1],port["dest"])
+            else:
+                fwd_orig = ("","")
+
 
 print(liste_intent)
-
