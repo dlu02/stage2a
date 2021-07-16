@@ -186,4 +186,15 @@ app.get('/hosts', (req,res) => {
     res.status(200).json(JSON.parse(doFunction('hosts')))
 })
 
+app.get('/intent', (req,res) => {
+    const orig = req.query.orig.replaceAll("-","/");
+    const dest = req.query.dest.replaceAll("-","/");
+    const macorig = req.query.macorig;
+    const macdest = req.query.macdest;
+    const str = 'onos localhost add-point-intent '
+    const newstr = str+" -s "+macorig+" -d "+macdest+" -t IPV4 "+orig+" "+dest;
+    const str1 = child_process.execSync(newstr);
+    res.status(200).json(JSON.stringify("ok"))
+})
+
 app.listen(5000., () => console.log('Server Running'))
