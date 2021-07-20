@@ -129,42 +129,44 @@ const RootQueryType = new GraphQLObjectType({
     })
 })
 
-// const RootMutationType = new GraphQLObjectType({
-//     name: 'Mutation',
-//     description: 'Root Mutation',
-//     fields: () => ({
-//         addBook: {
-//             type: BookType,
-//             description: 'Add a book',
-//             args: {
-//                 name: { type: GraphQLNonNull(GraphQLString) },
-//                 authorId: {type: GraphQLNonNull(GraphQLInt)}
-//             },
-//             resolve: (parent, args) => {
-//                 const book = { id: books.length +1, name: args.name, authorId: args.authorId }
-//                 books.push(book)
-//                 return book
-//             }
-//         },
-//         addAuthor: {
-//             type: AuthorType,
-//             description: 'Add an author',
-//             args: {
-//                 name: { type: GraphQLNonNull(GraphQLString) },
-//             },
-//             resolve: (parent, args) => {
-//                 const author = { id: authors.length +1, name: args.name }
-//                 authors.push(author)
-//                 return author
-//             }
-//         }
-//     })
-// })
+const IntentType = new GraphQLObjectType({
+    name: 'Intent',
+    description: 'Un intent entre deux ports',
+    fields: () => ({
+        intent_orig: { type: GraphQLNonNull(GraphQLString) },
+        mac_orig: { type: GraphQLNonNull(GraphQLString) },
+        intent_dest:  { type: GraphQLNonNull(GraphQLString) },
+        mac_dest: { type: GraphQLNonNull(GraphQLString) }
+    })
+})
+
+const RootMutationType = new GraphQLObjectType({
+    name: 'Mutation',
+    description: 'Root Mutation',
+    fields: () => ({
+        addIntent: {
+            type: IntentType,
+            description: 'Ajouter un intent',
+            args: {
+                intent_orig: { type: GraphQLNonNull(GraphQLString) },
+                mac_orig: { type: GraphQLNonNull(GraphQLString) },
+                intent_dest:  { type: GraphQLNonNull(GraphQLString) },
+                mac_dest: { type: GraphQLNonNull(GraphQLString) }
+            },
+            resolve: (parent, args) => {
+                const str = 'onos localhost add-point-intent '
+                const newstr = str+" -s "+args.mac_orig+" -d "+args.mac_dest+" -t IPV4 "+args.intent_orig+" "+args.intent_dest;
+                const str1 = child_process.execSync(newstr);
+                return { intent_orig: args.intent_orig, intent_dest: args.intent_dest }
+            }
+        }
+    })
+})
 
 // construction du schéma graphql
 const schema = new GraphQLSchema({
     query: RootQueryType,
-    // mutation: RootMutationType
+    mutation: RootMutationType
 })
 
 // construction du serveur graphql
