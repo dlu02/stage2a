@@ -3,6 +3,7 @@ from requests.auth import HTTPBasicAuth
 import networkx as nx
 import matplotlib.pyplot as plt
 import time
+import itertools
 
 print("Démarrage de l'application IPS, veuillez patienter.\n")
 print("Vérification de la disponibilité de l'API Onos...\n")
@@ -16,6 +17,8 @@ print("Vérification de la disponibilité de l'API Onos...\n")
 # r_links = requests.post(url, auth=HTTPBasicAuth('karaf','karaf'), data = liens_query).text
 
 # print(r_links)
+
+
 
 # création du graphe de la topologie du réseau associé au contrôleur ONOS à partir de son adresse IP
 def create_graph_from_topology(ip):
@@ -34,11 +37,10 @@ def create_graph_from_topology(ip):
     #     return "Erreur sur la liste des appareils."
     else:
         # devices_list = r_devices.json()['devices']
+        global host_list_mac
+        host_list_mac = []
         host_list = r_host.json()
         link_list = r_link.json()
-        
-        # for i in devices_list:
-        #     gr.add_node(i['id'])
         
         for l in link_list:
             gr.add_edge(l['src']['device'],l['dst']['device'],orig=l['src']['port'],dest=l['dst']['port'])
@@ -46,6 +48,7 @@ def create_graph_from_topology(ip):
         
         for h in host_list:
             gr.add_node(h['id'],id=h['id'])
+            host_list_mac.append(h['id'])
             gr.add_edge(h['id'],h['locations'][0]["elementId"],orig="host",dest=h['locations'][0]["port"])
             gr.add_edge(h['locations'][0]["elementId"],h['id'],orig=h['locations'][0]["port"],dest="host")
         
@@ -55,65 +58,84 @@ start = time.time()
 gr = create_graph_from_topology("192.168.1.154")
 r = nx.draw(gr, with_labels=True)
 plt.savefig("test.png")
-end = time.time()
-print("La topologie du réseau a été générée. Temps de génération : ", end - start, " secondes\n")
-while (1):
-    orig = input("Veuillez entrer l'hôte d'origine.\n")
-    if orig not in gr:
-        print("Hôte inexistant. Veuillez réessayer.\n")
-    else:
-        break
-while (1):
-    dest = input("Veuillez entrer l'hôte de destination.\n")
-    if dest not in gr:
-        print("Hôte inexistant. Veuillez réessayer.\n")
-    else:
-        break
 
-print("Exécution de Dijsktra... \n")
-# test Dijkstra
-l = nx.shortest_path(gr,orig,dest)
-print("Voici le chemin le plus court : \n")
-print(l)
 
-print("\nInstallation des intents :")
+# print("La topologie du réseau a été générée. Temps de génération : ", end - start, " secondes\n")
+# while (1):
+#     orig = input("Veuillez entrer l'hôte d'origine.\n")
+#     if orig not in gr:
+#         print("Hôte inexistant. Veuillez réessayer.\n")
+#     else:
+#         break
+# while (1):
+#     dest = input("Veuillez entrer l'hôte de destination.\n")
+#     if dest not in gr:
+#         print("Hôte inexistant. Veuillez réessayer.\n")
+#     else:
+#         break
 
-liste_intent = []
-fwd_orig = ("","")
-fwd_dest = ("","")
-mac_orig = orig.replace("/None","")
-mac_dest = dest.replace("/None","")
-for i in range(0,len(l)-1):
-    if i==len(l)-2:
-        port = gr.get_edge_data(l[i],l[i+1])
-        fwd_dest = (l[i],port["orig"])
-        intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
-        intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
-        r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
-        +"&macorig="+mac_orig+"&macdest="+mac_dest)
-        r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
-        +"&macorig="+mac_dest+"&macdest="+mac_orig)
-        print([intent_orig,intent_dest])
-        print([intent_dest,intent_orig])
-    else:
-        port = gr.get_edge_data(l[i],l[i+1])
-        if (port["orig"]=="host"):
-            fwd_orig = (l[i+1],port["dest"])
-        else:
+def install_intent(mac_o,mac_d,liste_chemin):
+    l=liste_chemin
+    fwd_orig = ("","")
+    fwd_dest = ("","")
+    mac_orig = mac_o.replace("/None","")
+    mac_dest = mac_d.replace("/None","")
+    for i in range(0,len(l)-1):
+        if i==len(l)-2:
+            port = gr.get_edge_data(l[i],l[i+1])
             fwd_dest = (l[i],port["orig"])
-            if (port["orig"]!="host"):
-                intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
-                intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
-                r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
-                +"&macorig="+mac_orig+"&macdest="+mac_dest)
-                r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
-        +"&macorig="+mac_dest+"&macdest="+mac_orig)
-                print([intent_orig,intent_dest])
-                print([intent_dest,intent_orig])
-
+            intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+            intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+            r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+            +"&macorig="+mac_orig+"&macdest="+mac_dest)
+            r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+            +"&macorig="+mac_dest+"&macdest="+mac_orig)
+            print([intent_orig,intent_dest])
+            print([intent_dest,intent_orig])
+        else:
+            port = gr.get_edge_data(l[i],l[i+1])
+            if (port["orig"]=="host"):
                 fwd_orig = (l[i+1],port["dest"])
             else:
-                fwd_orig = ("","")
+                fwd_dest = (l[i],port["orig"])
+                if (port["orig"]!="host"):
+                    intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+                    intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+                    r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+                    +"&macorig="+mac_orig+"&macdest="+mac_dest)
+                    r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+            +"&macorig="+mac_dest+"&macdest="+mac_orig)
+                    print([intent_orig,intent_dest])
+                    print([intent_dest,intent_orig])
+
+                    fwd_orig = (l[i+1],port["dest"])
+                else:
+                    fwd_orig = ("","")
+    return "Installation chemin : "+mac_orig+" -> "+mac_dest+" OK"
+
+list_comb = list(itertools.combinations(host_list_mac, 2))
+for comb in list_comb:
+    # dijsktra
+    chemin = nx.shortest_path(gr,comb[0],comb[1])
+
+    status = install_intent(comb[0],comb[1],chemin)
+
+end = time.time()
+
+print("Temps total ", end - start, " secondes\n")
+
+""" 
+# print("Exécution de Dijsktra... \n")
+# test Dijkstra
+l = nx.shortest_path(gr,orig,dest)
+# print("Voici le chemin le plus court : \n")
+# print(l)
+
+# print("\nInstallation des intents :")
 
 
-print(liste_intent)
+
+
+
+
+ """
