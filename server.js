@@ -22,10 +22,17 @@ const app = express()
 
 // exécution de la fonction f (issue de l'api rest d'onos) + parsage de la réponse
 function doFunction(f) {
-    const str = 'onos localhost '
-    const newstr = str+f+" -j";
-    const str1 = child_process.execSync(newstr);
-    return str1
+    if (f==="removeIntents") {
+        const str = 'onos localhost '
+        const str1 = child_process.execSync(str+"remove-intent -p")
+        return JSON.stringify({status: "ok"})
+    }
+    else {
+        const str = 'onos localhost '
+        const newstr = str+f+" -j";
+        const str1 = child_process.execSync(newstr);
+        return str1
+    }
 }
 // fs.writeFile('test7.json', doFunction('devices'), () => {})
 // const test = JSON.parse(doFunction('hosts'))
@@ -186,6 +193,11 @@ app.get('/links', (req,res) => {
 
 app.get('/hosts', (req,res) => {
     res.status(200).json(JSON.parse(doFunction('hosts')))
+})
+
+app.get('/removeIntents', (req,res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(doFunction('removeIntents'))
 })
 
 app.get('/intent', (req,res) => {
