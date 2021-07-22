@@ -54,25 +54,63 @@ def create_graph_from_topology(ip):
         
         return gr
 
-start = time.time()
+# start = time.time()
 gr = create_graph_from_topology("192.168.1.154")
 r = nx.draw(gr, with_labels=True)
 plt.savefig("test.png")
 
 
 # print("La topologie du réseau a été générée. Temps de génération : ", end - start, " secondes\n")
-# while (1):
-#     orig = input("Veuillez entrer l'hôte d'origine.\n")
-#     if orig not in gr:
-#         print("Hôte inexistant. Veuillez réessayer.\n")
-#     else:
-#         break
-# while (1):
-#     dest = input("Veuillez entrer l'hôte de destination.\n")
-#     if dest not in gr:
-#         print("Hôte inexistant. Veuillez réessayer.\n")
-#     else:
-#         break
+while (1):
+    orig = input("Veuillez entrer l'hôte d'origine.\n")
+    if orig not in gr:
+        print("Hôte inexistant. Veuillez réessayer.\n")
+    else:
+        break
+while (1):
+    dest = input("Veuillez entrer l'hôte de destination.\n")
+    if dest not in gr:
+        print("Hôte inexistant. Veuillez réessayer.\n")
+    else:
+        break
+
+l = nx.shortest_path(gr,orig,dest)
+fwd_orig = ("","")
+fwd_dest = ("","")
+mac_orig = orig.replace("/None","")
+mac_dest = dest.replace("/None","")
+for i in range(0,len(l)-1):
+    if i==len(l)-2:
+        port = gr.get_edge_data(l[i],l[i+1])
+        fwd_dest = (l[i],port["orig"])
+        intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+        intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+        r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+        +"&macorig="+mac_orig+"&macdest="+mac_dest)
+        r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+        +"&macorig="+mac_dest+"&macdest="+mac_orig)
+        print([intent_orig,intent_dest])
+        print([intent_dest,intent_orig])
+    else:
+        port = gr.get_edge_data(l[i],l[i+1])
+        if (port["orig"]=="host"):
+            fwd_orig = (l[i+1],port["dest"])
+        else:
+            fwd_dest = (l[i],port["orig"])
+            if (port["orig"]!="host"):
+                intent_orig = fwd_orig[0]+"-"+fwd_orig[1]
+                intent_dest = fwd_dest[0]+"-"+fwd_dest[1]
+                r_intent = requests.get("http://192.168.1.154:5000/intent?orig="+intent_orig+"&dest="+intent_dest
+                +"&macorig="+mac_orig+"&macdest="+mac_dest)
+                r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
+        +"&macorig="+mac_dest+"&macdest="+mac_orig)
+                print([intent_orig,intent_dest])
+                print([intent_dest,intent_orig])
+
+                fwd_orig = (l[i+1],port["dest"])
+            else:
+                fwd_orig = ("","")
+print(l)
 
 def install_intent(mac_o,mac_d,liste_chemin):
     l=liste_chemin
@@ -90,6 +128,8 @@ def install_intent(mac_o,mac_d,liste_chemin):
             +"&macorig="+mac_orig+"&macdest="+mac_dest)
             r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
             +"&macorig="+mac_dest+"&macdest="+mac_orig)
+            print([intent_orig,intent_dest])
+            print([intent_dest,intent_orig])
         else:
             port = gr.get_edge_data(l[i],l[i+1])
             if (port["orig"]=="host"):
@@ -103,6 +143,8 @@ def install_intent(mac_o,mac_d,liste_chemin):
                     +"&macorig="+mac_orig+"&macdest="+mac_dest)
                     r_intent_inv = requests.get("http://192.168.1.154:5000/intent?orig="+intent_dest+"&dest="+intent_orig
             +"&macorig="+mac_dest+"&macdest="+mac_orig)
+                    print([intent_orig,intent_dest])
+                    print([intent_dest,intent_orig])
 
                     fwd_orig = (l[i+1],port["dest"])
                 else:
@@ -116,10 +158,22 @@ def install_intent(mac_o,mac_d,liste_chemin):
 
 #     status = install_intent(comb[0],comb[1],chemin)
 
-orig="FE:C0:52:12:92:33/None"
-dest="8E:FC:DE:BA:3B:4B/None"
-l = nx.shortest_path(gr,orig,dest)
-print(install_intent(orig,dest,l))
-end = time.time()
+# end = time.time()
 
-print("Temps total ", end - start, " secondes\n")
+# print("Temps total ", end - start, " secondes\n")
+
+""" 
+# print("Exécution de Dijsktra... \n")
+# test Dijkstra
+l = nx.shortest_path(gr,orig,dest)
+# print("Voici le chemin le plus court : \n")
+# print(l)
+
+# print("\nInstallation des intents :")
+
+
+
+
+
+
+ """

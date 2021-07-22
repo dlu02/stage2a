@@ -90,8 +90,6 @@ def install_intent(mac_o,mac_d,liste_chemin):
             intent_dest = fwd_dest[0]+"/"+fwd_dest[1]
             string_mut += "r"+str(i)+": addIntent(intent_orig: \""+intent_orig+"\", mac_orig: \""+mac_orig+"\", intent_dest: \""+intent_dest+"\", mac_dest: \""+mac_dest+"\") { intent_orig, intent_dest }\n"
             string_mut += "s"+str(i)+": addIntent(intent_orig: \""+intent_dest+"\", mac_orig: \""+mac_dest+"\", intent_dest: \""+intent_orig+"\", mac_dest: \""+mac_orig+"\") { intent_orig, intent_dest }\n"
-            print([intent_orig,intent_dest])
-            print([intent_dest,intent_orig])
         else:
             port = gr.get_edge_data(l[i],l[i+1])
             if (port["orig"]=="host"):
@@ -104,8 +102,6 @@ def install_intent(mac_o,mac_d,liste_chemin):
 
                     string_mut += "r"+str(i)+": addIntent(intent_orig: \""+intent_orig+"\", mac_orig: \""+mac_orig+"\", intent_dest: \""+intent_dest+"\", mac_dest: \""+mac_dest+"\") { intent_orig, intent_dest }\n"
                     string_mut += "s"+str(i)+": addIntent(intent_orig: \""+intent_dest+"\", mac_orig: \""+mac_dest+"\", intent_dest: \""+intent_orig+"\", mac_dest: \""+mac_orig+"\") { intent_orig, intent_dest }\n"
-                    print([intent_orig,intent_dest])
-                    print([intent_dest,intent_orig])
 
                     fwd_orig = (l[i+1],port["dest"])
                 else:
@@ -114,15 +110,19 @@ def install_intent(mac_o,mac_d,liste_chemin):
     string_mut += "}"
     mutation_query = {'query': string_mut}
     query_gql = requests.post("http://192.168.1.154:5000/graphql", auth=HTTPBasicAuth('karaf','karaf'), data = mutation_query)
-    return query_gql.content
+    return "ok"
 
-list_comb = list(itertools.combinations(host_list_mac, 2))
-for comb in list_comb:
-    # dijsktra
-    chemin = nx.shortest_path(gr,comb[0],comb[1])
+# list_comb = list(itertools.combinations(host_list_mac, 2))
+# for comb in list_comb:
+#     # dijsktra
+#     chemin = nx.shortest_path(gr,comb[0],comb[1])
 
-    status = install_intent(comb[0],comb[1],chemin)
+#     status = install_intent(comb[0],comb[1],chemin)
 
+orig="FE:C0:52:12:92:33/None"
+dest="8E:FC:DE:BA:3B:4B/None"
+l = nx.shortest_path(gr,orig,dest)
+print(install_intent(orig,dest,l))
 end = time.time()
 
 print("Temps total ", end - start, " secondes\n")
