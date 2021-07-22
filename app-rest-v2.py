@@ -54,12 +54,6 @@ def create_graph_from_topology(ip):
         
         return gr
 
-start = time.time()
-gr = create_graph_from_topology("192.168.1.154")
-r = nx.draw(gr, with_labels=True)
-plt.savefig("test.png")
-
-
 # print("La topologie du réseau a été générée. Temps de génération : ", end - start, " secondes\n")
 # while (1):
 #     orig = input("Veuillez entrer l'hôte d'origine.\n")
@@ -116,10 +110,18 @@ def install_intent(mac_o,mac_d,liste_chemin):
 
 #     status = install_intent(comb[0],comb[1],chemin)
 
-orig="FE:C0:52:12:92:33/None"
-dest="8E:FC:DE:BA:3B:4B/None"
-l = nx.shortest_path(gr,orig,dest)
-print(install_intent(orig,dest,l))
-end = time.time()
+res = []
+gr = create_graph_from_topology("192.168.1.154")
+r = nx.draw(gr, with_labels=True)
+plt.savefig("test.png")
 
-print("Temps total ", end - start, " secondes\n")
+for i in range(0,50):
+    orig="FE:C0:52:12:92:33/None"
+    dest="8E:FC:DE:BA:3B:4B/None"
+    start = time.time()
+    l = nx.shortest_path(gr,orig,dest)
+    install_intent(orig,dest,l)
+    end = time.time()
+    res.append(end-start)
+
+print(res)
