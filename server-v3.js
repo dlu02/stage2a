@@ -20,12 +20,17 @@ const { GraphQLJSON } = require('graphql-type-json');
 
 const app = express()
 
-const path = require('path');
-const {NodeSSH} = require('node-ssh');
 
-const ssh = new NodeSSH();
+const { Client } = require('ssh2');
+conn = require('ssh2-connect');
+exec = require('ssh2-exec');
 
-var va;
+conn({
+    host: '192.168.1.154',
+    port: 8101,
+    username: 'onos',
+    password: 'rocks'
+}, )
 
 // exécution de la fonction f (issue de l'api rest d'onos) + parsage de la réponse
 function doFunction(f) {
@@ -34,6 +39,17 @@ function doFunction(f) {
     const str1 = child_process.execSync(newstr);
     return str1
 }
+
+var ssh = new SSH({
+    host: '192.168.1.154',
+    port: 8101,
+    username: 'onos',
+    password: 'rocks'
+});
+
+
+
+
 
 ssh.connect({
     host: '192.168.1.154',
@@ -156,7 +172,8 @@ ssh.connect({
                         mac_dest: { type: GraphQLNonNull(GraphQLString) }
                     },
                     resolve: (parent, args) => {
-                        ssh.execCommand("add-point-intent "+" -s "+args.mac_orig+" -d "+args.mac_dest+" -t IPV4 "+args.intent_orig+" "+args.intent_dest).then(res.status(200).json({ intent_orig: args.intent_orig, intent_dest: args.intent_dest }))
+                        ssh.execCommand("add-point-intent "+" -s "+args.mac_orig+" -d "+args.mac_dest+" -t IPV4 "+args.intent_orig+" "+args.intent_dest)
+                        return { intent_orig: args.intent_orig, intent_dest: args.intent_dest }
                     }
                 }
             })
@@ -198,8 +215,8 @@ ssh.connect({
             const dest = req.query.dest.replaceAll("-","/");
             const macorig = req.query.macorig;
             const macdest = req.query.macdest;
-            ssh.execCommand("add-point-intent "+" -s "+macorig+" -d "+macdest+" -t IPV4 "+orig+" "+dest).then(() => { res.status(200).json(JSON.stringify("ok")) }) 
-            
+            ssh.execCommand("add-point-intent "+" -s "+macorig+" -d "+macdest+" -t IPV4 "+orig+" "+dest)
+            res.status(200).json(JSON.stringify("ok"))
         })
   })
 
