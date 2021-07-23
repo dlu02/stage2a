@@ -156,7 +156,13 @@ ssh.connect({
                         mac_dest: { type: GraphQLNonNull(GraphQLString) }
                     },
                     resolve: (parent, args) => {
-                        ssh.execCommand("add-point-intent "+" -s "+args.mac_orig+" -d "+args.mac_dest+" -t IPV4 "+args.intent_orig+" "+args.intent_dest).then(res.status(200).json({ intent_orig: args.intent_orig, intent_dest: args.intent_dest }))
+                        return ssh.execCommand("add-point-intent "+" -s "+args.mac_orig+" -d "+args.mac_dest+" -t IPV4 "+args.intent_orig+" "+args.intent_dest).then((result) => console.log(result.stdout))
+                    }
+                },
+                removeIntent: {
+                    type: GraphQLString,
+                    resolve: (parent, args) => {
+                        return ssh.execCommand("remove-intent -p").then((result) => console.log(result.stdout))
                     }
                 }
             })
@@ -198,7 +204,7 @@ ssh.connect({
             const dest = req.query.dest.replaceAll("-","/");
             const macorig = req.query.macorig;
             const macdest = req.query.macdest;
-            ssh.execCommand("add-point-intent "+" -s "+macorig+" -d "+macdest+" -t IPV4 "+orig+" "+dest).then(() => { res.status(200).json(JSON.stringify("ok")) }) 
+            ssh.execCommand("add-point-intent "+" -s "+macorig+" -d "+macdest+" -t IPV4 "+orig+" "+dest).then((result) => { res.status(200).json(JSON.stringify("ok")) ; console.log(result.stdout) }) 
             
         })
   })
