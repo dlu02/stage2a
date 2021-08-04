@@ -34,19 +34,6 @@ function doFunction(f) {
         return str1
     }
 }
-// fs.writeFile('test7.json', doFunction('devices'), () => {})
-// const test = JSON.parse(doFunction('hosts'))
-// // test["locations"] = JSON.parse(test["locations"])
-// // for (var elt in test) {
-// //     const temp = (elt["locations"])[0]
-// //     elt.locations = JSON.stringify(temp)
-// // }
-// for (const elt of test) {
-//     const temp = elt["locations"]
-//     elt["locations"] = JSON.stringify(temp)
-// }
-// // console.log(test[2].locations[0])
-// console.log(test)
 
 // type device pour un appareil du cluster
 const DeviceType = new GraphQLObjectType({
@@ -56,12 +43,6 @@ const DeviceType = new GraphQLObjectType({
         id: { type: GraphQLNonNull(GraphQLString) },
         available: { type: GraphQLNonNull(GraphQLString)},
         localstatus: { type: GraphQLNonNull(GraphQLString)},
-        // author: {
-        //     type: AuthorType,
-        //     resolve: (books) => {
-        //         return authors.find(author => author.id === books.authorId)
-        //     }
-        // }
         role: { type: GraphQLNonNull(GraphQLString)},
         type: { type: GraphQLNonNull(GraphQLString)},
         mfr: { type: GraphQLNonNull(GraphQLString)},

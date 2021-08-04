@@ -13,7 +13,9 @@ const {
     GraphQLInt,
     GraphQLNonNull,
     GraphQLScalarType,
-    GraphQLBoolean
+    GraphQLBoolean,
+    GraphQLInputObjectType,
+    GraphQLOutputObjectType
 } = require('graphql')
 
 const { GraphQLJSON } = require('graphql-type-json');
@@ -33,6 +35,13 @@ function doFunction(f) {
     const newstr = str+f+" -j";
     const str1 = child_process.execSync(newstr);
     return str1
+}
+
+function doAddIntentExt(elt_intent_liste) {
+    const cmd = "onos localhost add-point-intent -s "+elt_intent_liste["mac_orig"]+" -d "+elt_intent_liste["mac_dest"]+" -t IPV4 "+elt_intent_liste["intent_orig"]+" "+elt_intent_liste["intent_dest"]
+    const str1 = child_process.execSync(cmd)
+    console.log(cmd)
+    return "OK" 
 }
 
 ssh.connect({
@@ -142,6 +151,16 @@ ssh.connect({
             })
         })
 
+        const IntentListInput = new GraphQLInputObjectType({
+            name: 'IntentListInput',
+            fields: {
+                intent_orig: { type: GraphQLNonNull(GraphQLString) },
+                mac_orig: { type: GraphQLNonNull(GraphQLString) },
+                intent_dest:  { type: GraphQLNonNull(GraphQLString) },
+                mac_dest: { type: GraphQLNonNull(GraphQLString) }
+            }
+        });
+
         const RootMutationType = new GraphQLObjectType({
             name: 'Mutation',
             description: 'Root Mutation',
@@ -156,7 +175,52 @@ ssh.connect({
                         mac_dest: { type: GraphQLNonNull(GraphQLString) }
                     },
                     resolve: (parent, args) => {
-                        return ssh.execCommand("add-point-intent "+" -s "+args.mac_orig+" -d "+args.mac_dest+" -t IPV4 "+args.intent_orig+" "+args.intent_dest).then((result) => console.log(result.stdout))
+                        return ssh.execCommand("add-point-intent "+" -s "+args.mac_orig+" -d "+args.mac_dest+" -t IPV4 "+args.intent_orig+" "+args.intent_dest).then((result) => console.log(result.stdout)).then(() => JSON.parse('{ "intent_orig": "'+args.intent_orig+'", "mac_orig": "'+args.mac_orig+'", "intent_dest": "'+args.intent_dest+'", "mac_dest": "'+args.mac_dest+'" }'))
+                    }
+                },
+                addIntent3: {
+                    type: GraphQLList(IntentType),
+                    description: 'Ajouter une liste de intents',
+                    args: {
+                        input: { type: GraphQLList(IntentListInput) },
+                    },
+                    resolve: (parent, args) => { 
+                        for (elt in args.input) {
+                            doAddIntentExt(elt)
+                            console.log("OK Ajout Intent")
+                        }
+                        
+                        
+                    }
+                },
+                addIntent2: {
+                    type: GraphQLList(IntentType),
+                    description: 'Ajouter une liste de intents',
+                    args: {
+                        input: { type: GraphQLList(IntentListInput) },
+                    },
+                    resolve: (parent, args) => { 
+                        async function parcoursListe(liste, i) {
+                            if (i >= liste.length) {
+                                console.log("ok")
+                            }
+                            else {
+                                const temp = await ssh.execCommand("add-point-intent "+" -s "+liste[i]["mac_orig"]+" -d "+liste[i]["mac_dest"]+" -t IPV4 "+liste[i]["intent_orig"]+" "+liste[i]["intent_dest"]).then((result) => console.log(result.stdout)).then(() => parcoursListe(liste, i+1))
+                            }
+                        }
+
+
+                        // async function doBoucle() {
+                        //     for (i = 0 ; i < (args.input.length) ; i++) {
+                        //         await parcoursListe(args.input[i])
+                        //     }
+                        // }
+                        async function doF() {
+                            return await parcoursListe(args.input, 0)
+                        }
+
+                        doF()
+                        
                     }
                 },
                 removeIntent: {
@@ -204,7 +268,7 @@ ssh.connect({
             const dest = req.query.dest.replaceAll("-","/");
             const macorig = req.query.macorig;
             const macdest = req.query.macdest;
-            ssh.execCommand("add-point-intent "+" -s "+macorig+" -d "+macdest+" -t IPV4 "+orig+" "+dest).then((result) => { res.status(200).json(JSON.stringify("ok")) ; console.log(result.stdout) }) 
+            ssh.execCommand("add-point-intent "+" -s "+macorig+" -d "+macdest+" -t IPV4 "+orig+" "+dest).then((result) => { res.status(200).json(JSON.stringify("ok")) }) 
             
         })
   })
