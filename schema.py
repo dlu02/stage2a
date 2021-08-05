@@ -60,18 +60,26 @@ class Query(ObjectType):
     # Argument (name) for the Field and returns data for the query Response
     def resolve_devices(root, info):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("devices -j")
+        while (ssh_stdout.channel.recv_exit_status() != 0):
+            pass
         return json.load(ssh_stdout)
     
     def resolve_hosts(root, info):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("hosts -j")
+        while (ssh_stdout.channel.recv_exit_status() != 0):
+            pass
         return json.load(ssh_stdout)
     
     def resolve_liens(root, info):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("links -j")
+        while (ssh_stdout.channel.recv_exit_status() != 0):
+            pass
         return json.load(ssh_stdout)
 
     def resolve_removeIntent(root, info):
         ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("remove-intent -p")
+        while (ssh_stdout.channel.recv_exit_status() != 0):
+            pass
         return "Suppression des intents OK"
 
 class AddIntent(Mutation):
@@ -85,6 +93,8 @@ class AddIntent(Mutation):
         for elt in intentList:
             print(elt)
             ssh_stdin, ssh_stdout, ssh_stderr = ssh.exec_command("add-point-intent "+" -s "+elt["macOrig"]+" -d "+elt["macDest"]+" -t IPV4 "+elt["intentOrig"]+" "+elt["intentDest"])
+            while (ssh_stdout.channel.recv_exit_status() != 0):
+                pass
         return AddIntent(ok="ok")
 
 
