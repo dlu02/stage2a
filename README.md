@@ -2,6 +2,8 @@
 
 Voici le code source du stage 2A 2021 : il permet de créer une application de routage dynamique ou statique à partir d'un réseau SDN et également de créer le serveur GraphQL/REST nécessaire pour traiter les requêtes.
 
+> Le code à jour pour tout le stage se trouve UNIQUEMENT dans cette branche `new`. Les autres branches ne sont pas à jour et seront bientôt supprimées.
+
 ## Contenu
 
 Ce dépôt contient :
@@ -28,4 +30,4 @@ Sur la machine hébergeant les applications, est nécessaire :
 
 - Python 3.6+ avec le module Jupyter
 
-Une configuration plus détaillée est décrite dans chacun des fichiers.
+Une configuration plus détaillée est décrite dans chacun des dossiers.
