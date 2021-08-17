@@ -12,7 +12,7 @@ app.debug = True
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect("192.168.1.154", username="onos", password="rocks", port=8101)
+ssh.connect("192.168.56.101", username="onos", password="rocks", port=8101)
 
 class Device(ObjectType):
     id = String()
