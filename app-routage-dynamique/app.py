@@ -2,10 +2,10 @@ import requests
 import networkx as nx
 import time
 import itertools
-from multiprocessing import Process
+from multiprocessing import Process,freeze_support
 import csv
 
-ip = "127.0.0.1"
+ip = "192.168.56.101"
 def create_graph_rest(ip):
     # initialisation du graphe
     gr = nx.DiGraph()
@@ -160,30 +160,31 @@ def start():
         res.append(nx.shortest_path(gr,elt[0],elt[1]))
 
 
+if __name__ == '__main__':
+    freeze_support()
+    proc2 = Process(target=update)
+    proc2.start()
 
-proc2 = Process(target=update)
-proc2.start()
-
-while True:
-    init = input("Hôte d'origine : \n")
-    dest = input("Hôte de destination : \n")
-    if (init,dest) in liste_couples:
-        l = (init, dest)
-        index = liste_couples.index(l)
-        chemin = res[index]
-        install_intent_re(gr,init,dest,chemin)
-        print("Hôtes %s et %s correctement reliés !" % (init,dest))
-        f = open("intents.txt", "a")
-        f.write(init+","+dest+"\n")
-        f.close()
-    elif (dest,init) in liste_couples:
-        l = (dest, init)
-        index = liste_couples.index(l)
-        chemin = res[index]
-        install_intent_re(gr,dest,init,chemin)
-        print("Hôtes %s et %s correctement reliés !" % (dest,init))
-        f = open("intents.txt", "a")
-        f.write(init+","+dest+"\n")
-        f.close()
-    else:
-        print("Couple absent !")
+    while True:
+        init = input("Hôte d'origine : \n")
+        dest = input("Hôte de destination : \n")
+        if (init,dest) in liste_couples:
+            l = (init, dest)
+            index = liste_couples.index(l)
+            chemin = res[index]
+            install_intent_re(gr,init,dest,chemin)
+            print("Hôtes %s et %s correctement reliés !" % (init,dest))
+            f = open("intents.txt", "a")
+            f.write(init+","+dest+"\n")
+            f.close()
+        elif (dest,init) in liste_couples:
+            l = (dest, init)
+            index = liste_couples.index(l)
+            chemin = res[index]
+            install_intent_re(gr,dest,init,chemin)
+            print("Hôtes %s et %s correctement reliés !" % (dest,init))
+            f = open("intents.txt", "a")
+            f.write(init+","+dest+"\n")
+            f.close()
+        else:
+            print("Couple absent !")
